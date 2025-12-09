@@ -1,0 +1,36 @@
+# Mental Health Chatbot - Production Dependencies
+
+# Web Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# OpenAI
+openai>=1.10.0
+
+# Vector Store
+chromadb>=0.4.22
+
+# Data Processing
+pandas>=2.1.0
+numpy>=1.26.0
+
+# HTTP Client
+httpx>=0.26.0
+
+# Utilities
+python-dotenv>=1.0.0
+python-multipart>=0.0.6
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
+httpx>=0.26.0
+
+# Logging & Monitoring (optional)
+# structlog>=24.1.0
+# prometheus-client>=0.19.0
+
+# Production Server (optional)
+# gunicorn>=21.2.0

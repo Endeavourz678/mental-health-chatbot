@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindCare - Teman Bicara Kesehatan Mentalmu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                </svg>
+            </div>
+
+            <!-- Hanya satu tab -->
+            <div class="nav-tabs">
+                <button class="nav-tab active">Chat</button>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <!-- Status Koneksi -->
+            <div class="connection-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span class="status-text" id="statusText">Memeriksa...</span>
+            </div>
+
+            <button class="icon-btn" id="newChatBtn" aria-label="Chat Baru" title="Mulai Chat Baru">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+            </button>
+
+            <div class="user-avatar">
+                <img src="friend.jpg" alt="User">
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main: judul di tengah & chat di tengah -->
+    <main class="main-container">
+        <div class="chat-wrapper">
+            <h1 class="page-title">Kesehatan Mental Saya</h1>
+
+            <div class="chat-card">
+                <div class="chat-header">
+                    <div class="chat-info">
+                        <span class="chat-label">Ruang Cerita</span>
+                        <p class="chat-subtitle">Ceritakan bagaimana perasaanmu hari ini</p>
+                    </div>
+                    <div class="chat-assistant-avatar">
+                        <img src="friend.jpg" alt="Assistant">
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-section">
+                    <div class="progress-info">
+                        <span class="progress-text" id="progressText">5 pesan lagi untuk analisis</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <!-- Area pesan -->
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-placeholder" id="chatPlaceholder">
+                        Belum ada percakapan. Kamu bisa mulai dengan menceritakan perasaanmu di sini.
+                    </div>
+                </div>
+
+                <!-- Input chat -->
+                <form class="chat-input-row" id="chatForm">
+                    <input
+                        type="text"
+                        class="chat-input"
+                        id="chatInput"
+                        placeholder="Mulai berbagi cerita atau tanyakan sesuatu..."
+                        autocomplete="off"
+                    >
+                    <button type="button" class="chat-icon-btn" aria-label="Voice input">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        </svg>
+                    </button>
+                    <button type="submit" class="chat-send-btn" aria-label="Kirim">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <p class="footer-disclaimer">
+                ⚠️ Layanan ini bukan pengganti konsultasi profesional kesehatan mental.
+            </p>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

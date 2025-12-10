@@ -194,15 +194,6 @@ Place CSV files in `data/` directory and restart the server or call:
 curl -X POST http://localhost:8000/index/reload
 ```
 
-## 🧪 Testing
-
-```bash
-# Run all tests
-pytest tests/ -v
-
-# Run with coverage
-pytest tests/ --cov=app --cov=models --cov=utils
-```
 
 ## 🔒 Security Notes
 

@@ -15,7 +15,6 @@ from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-# Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config import settings, SYSTEM_PROMPT
@@ -28,7 +27,6 @@ from app.schemas import (
 from app.session_manager import SessionManager
 
 
-# Configure logging
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -36,7 +34,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# Global instances
 vector_store: Optional[VectorStore] = None
 rag_chain: Optional[MentalHealthRAGChain] = None
 session_manager: Optional[SessionManager] = None
@@ -48,14 +45,12 @@ def initialize_components():
     
     logger.info("Initializing components...")
     
-    # Check for API key
     api_key = settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY")
     if not api_key:
-        logger.warning("OPENAI_API_KEY not set. Some features will be unavailable.")
+        logger.warning("OPENAI_API_KEY not set.")
         return False
     
     try:
-        # Initialize vector store
         vector_store = VectorStore(
             persist_directory=settings.CHROMA_PERSIST_DIRECTORY,
             collection_name=settings.COLLECTION_NAME,
@@ -63,7 +58,6 @@ def initialize_components():
             embedding_model=settings.EMBEDDING_MODEL
         )
         
-        # Load and index data if collection is empty
         stats = vector_store.get_collection_stats()
         if stats['count'] == 0:
             logger.info("Vector store is empty, loading data...")
@@ -75,7 +69,6 @@ def initialize_components():
         else:
             logger.info(f"Vector store has {stats['count']} documents")
         
-        # Initialize RAG chain
         rag_chain = MentalHealthRAGChain(
             vector_store=vector_store,
             openai_api_key=api_key,
@@ -85,7 +78,6 @@ def initialize_components():
             retrieval_top_k=settings.RETRIEVAL_TOP_K
         )
         
-        # Initialize session manager
         session_manager = SessionManager()
         
         logger.info("All components initialized successfully")
@@ -99,14 +91,10 @@ def initialize_components():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup/shutdown"""
-    # Startup
     initialize_components()
     yield
-    # Shutdown
     logger.info("Shutting down...")
 
-
-# Create FastAPI app
 app = FastAPI(
     title="Mental Health Support Chatbot API",
     description="""
@@ -126,17 +114,13 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-# ============ Exception Handlers ============
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
@@ -149,8 +133,6 @@ async def global_exception_handler(request, exc):
         ).model_dump()
     )
 
-
-# ============ Dependency Functions ============
 
 def get_rag_chain() -> MentalHealthRAGChain:
     """Dependency to get RAG chain"""
@@ -168,8 +150,6 @@ def get_session_manager() -> SessionManager:
         raise HTTPException(status_code=503, detail="Session manager not initialized")
     return session_manager
 
-
-# ============ API Endpoints ============
 
 @app.get("/", tags=["Root"])
 async def root():
@@ -224,35 +204,31 @@ async def chat(
     try:
         session_id = request.session_id or str(uuid.uuid4())
         
-        # Get chat history
         chat_history = []
         try:
             chat_history = sessions.get_chat_history(session_id)
         except:
             pass
         
-        # Get response from RAG chain
         response = chain.chat(
             user_message=request.message,
             chat_history=chat_history
         )
         
-        # Save to session
         try:
             sessions.add_message(session_id, "user", request.message, response.classification, response.is_crisis)
             sessions.add_message(session_id, "assistant", response.answer)
         except:
             pass
         
-        # Return response with status label
         return {
             "message_id": f"msg_{uuid.uuid4().hex[:12]}",
             "response": response.answer,
             "classification": response.classification,
             "confidence": response.confidence,
             "is_crisis": response.is_crisis,
-            "status_label": response.status_label,  # Label seperti "Depression (75% confidence)"
-            "show_label": response.show_label,       # Boolean apakah perlu tampilkan label
+            "status_label": response.status_label,  
+            "show_label": response.show_label,      
             "message_count": response.message_count
         }
         
@@ -327,9 +303,6 @@ async def reload_index(
     background_tasks.add_task(reload_task)
     
     return {"message": "Index reload started in background"}
-
-
-# ============ Main Entry Point ============
 
 if __name__ == "__main__":
     import uvicorn

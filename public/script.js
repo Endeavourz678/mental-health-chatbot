@@ -1,26 +1,12 @@
-// ============================================
-// MindCare Chatbot - Frontend Script
-// Chat mengalir TERUS tanpa ending
-// Status ditampilkan real-time
-// User SELALU bisa chat terus
-// ============================================
-
 const API_URL = 'http://127.0.0.1:8000';
 
-// State
 let sessionId = generateSessionId();
-let isProcessing = false;  // Flag untuk prevent double submit
+let isProcessing = false;
 
-// DOM Elements
 let chatForm, chatInput, chatMessages, statusBadge, statusLabelText;
 let statusDot, statusText, sendBtn, newChatBtn;
 
-// ============================================
-// INITIALIZATION
-// ============================================
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Get DOM elements
     chatForm = document.getElementById('chatForm');
     chatInput = document.getElementById('chatInput');
     chatMessages = document.getElementById('chatMessages');
@@ -31,38 +17,25 @@ document.addEventListener('DOMContentLoaded', function() {
     sendBtn = document.getElementById('sendBtn');
     newChatBtn = document.getElementById('newChatBtn');
     
-    // Setup event listeners
     setupEventListeners();
     
-    // Check connection
     checkConnection();
     setInterval(checkConnection, 30000);
     
-    // Focus input
     if (chatInput) chatInput.focus();
     
-    // Initial status
     updateStatusBadge(null, 0, false);
     
     console.log('MindCare initialized!');
 });
 
-// ============================================
-// EVENT LISTENERS SETUP
-// ============================================
-
 function setupEventListeners() {
-    // Form submit
     if (chatForm) {
         chatForm.addEventListener('submit', handleSubmit);
     }
-    
-    // New chat button
     if (newChatBtn) {
         newChatBtn.addEventListener('click', handleNewChat);
     }
-    
-    // Enter key to send
     if (chatInput) {
         chatInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -72,10 +45,6 @@ function setupEventListeners() {
         });
     }
 }
-
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
 
 function generateSessionId() {
     return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -104,10 +73,6 @@ function disableInput() {
     isProcessing = true;
 }
 
-// ============================================
-// SERVER CONNECTION
-// ============================================
-
 async function checkConnection() {
     try {
         const response = await fetch(`${API_URL}/health`, { 
@@ -127,21 +92,13 @@ async function checkConnection() {
     return false;
 }
 
-// ============================================
-// STATUS BADGE UPDATE
-// ============================================
-
 function updateStatusBadge(classification, confidence, showLabel) {
     if (!statusBadge || !statusLabelText) return;
-    
-    // Reset all classes
     statusBadge.className = 'status-badge';
     
     if (showLabel && classification && classification !== 'Normal') {
         const confidencePct = Math.round(confidence * 100);
         statusLabelText.textContent = `${classification} (${confidencePct}%)`;
-        
-        // Add class based on classification
         const classMap = {
             'Anxiety': 'anxiety',
             'Depression': 'depression',
@@ -160,15 +117,10 @@ function updateStatusBadge(classification, confidence, showLabel) {
     }
 }
 
-// ============================================
-// MESSAGE CREATION
-// ============================================
-
 function createMessageElement(text, sender, statusLabel) {
     const row = document.createElement('div');
     row.className = `message-row ${sender}`;
-    
-    // Avatar
+
     const avatar = document.createElement('div');
     avatar.className = 'msg-avatar';
     
@@ -178,18 +130,14 @@ function createMessageElement(text, sender, statusLabel) {
         avatar.className += ' user-avatar';
         avatar.textContent = '👤';
     }
-    
-    // Content container
-    const content = document.createElement('div');
+     const content = document.createElement('div');
     content.className = 'msg-content';
     
-    // Bubble
     const bubble = document.createElement('div');
     bubble.className = 'msg-bubble';
     bubble.innerHTML = text.replace(/\n/g, '<br>');
     content.appendChild(bubble);
     
-    // Status label (hanya untuk assistant dan jika ada)
     if (sender === 'assistant' && statusLabel) {
         const label = document.createElement('div');
         label.className = 'msg-status-label';
@@ -197,7 +145,6 @@ function createMessageElement(text, sender, statusLabel) {
         content.appendChild(label);
     }
     
-    // Assemble
     row.appendChild(avatar);
     row.appendChild(content);
     
@@ -233,10 +180,6 @@ function removeWelcomeMessage() {
     if (welcome) welcome.remove();
 }
 
-// ============================================
-// SEND MESSAGE TO API
-// ============================================
-
 async function sendMessageToAPI(message) {
     const response = await fetch(`${API_URL}/chat`, {
         method: 'POST',
@@ -255,14 +198,9 @@ async function sendMessageToAPI(message) {
     return await response.json();
 }
 
-// ============================================
-// HANDLE FORM SUBMIT
-// ============================================
-
 async function handleSubmit(e) {
     if (e) e.preventDefault();
     
-    // Prevent double submit
     if (isProcessing) {
         console.log('Already processing, please wait...');
         return;
@@ -271,21 +209,17 @@ async function handleSubmit(e) {
     const message = chatInput ? chatInput.value.trim() : '';
     if (!message) return;
     
-    // Clear input and disable temporarily
     if (chatInput) chatInput.value = '';
     disableInput();
     
-    // Remove welcome message if exists
     removeWelcomeMessage();
     
-    // Add user message to chat
     const userMsg = createMessageElement(message, 'user', null);
     if (chatMessages) {
         chatMessages.appendChild(userMsg);
         scrollToBottom();
     }
     
-    // Show typing indicator
     const typing = createTypingIndicator();
     if (chatMessages) {
         chatMessages.appendChild(typing);
@@ -293,21 +227,16 @@ async function handleSubmit(e) {
     }
     
     try {
-        // Send to API
         console.log('Sending message:', message);
         const data = await sendMessageToAPI(message);
         console.log('Received response:', data);
         
-        // Remove typing indicator
         removeTypingIndicator();
         
-        // Update status badge in navbar
         updateStatusBadge(data.classification, data.confidence, data.show_label);
         
-        // Create status label text if should show
         const statusLabel = data.show_label ? data.status_label : null;
         
-        // Add assistant message
         const assistantMsg = createMessageElement(data.response, 'assistant', statusLabel);
         if (chatMessages) {
             chatMessages.appendChild(assistantMsg);
@@ -318,7 +247,6 @@ async function handleSubmit(e) {
         console.error('Error sending message:', error);
         removeTypingIndicator();
         
-        // Show error message
         const errorMsg = createMessageElement(
             '😔 Maaf, terjadi kesalahan koneksi. Pastikan server sedang berjalan. Kamu tetap bisa coba kirim pesan lagi.',
             'assistant',
@@ -330,19 +258,12 @@ async function handleSubmit(e) {
         }
     }
     
-    // ALWAYS re-enable input - this is critical!
     enableInput();
 }
 
-// ============================================
-// HANDLE NEW CHAT
-// ============================================
-
 function handleNewChat() {
-    // Generate new session
     sessionId = generateSessionId();
     
-    // Clear messages and show welcome
     if (chatMessages) {
         chatMessages.innerHTML = `
             <div class="welcome-message" id="welcomeMessage">
@@ -354,18 +275,13 @@ function handleNewChat() {
         `;
     }
     
-    // Reset status badge
     updateStatusBadge(null, 0, false);
     
-    // Enable and focus input
     enableInput();
     
     console.log('New chat started with session:', sessionId);
 }
 
-// ============================================
-// EXPOSE FUNCTIONS GLOBALLY (for debugging)
-// ============================================
 
 window.MindCare = {
     sendMessage: handleSubmit,

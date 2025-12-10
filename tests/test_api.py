@@ -6,7 +6,6 @@ from fastapi.testclient import TestClient
 import sys
 from pathlib import Path
 
-# Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.main import app
@@ -44,7 +43,6 @@ class TestChatEndpoints:
             "/chat/simple",
             params={"message": "Hello"}
         )
-        # May fail if OpenAI key not set, that's expected
         assert response.status_code in [200, 503]
     
     def test_chat_full_endpoint(self):
@@ -57,7 +55,6 @@ class TestChatEndpoints:
                 "include_context": False
             }
         )
-        # May fail if OpenAI key not set
         assert response.status_code in [200, 503]
         
         if response.status_code == 200:
@@ -84,13 +81,11 @@ class TestSessionManagement:
     def test_session_stats_not_found(self):
         """Test session stats for non-existent session"""
         response = client.get("/session/nonexistent_session/stats")
-        # Should return 404 or session stats if auto-created
         assert response.status_code in [200, 404, 503]
     
     def test_clear_session(self):
         """Test clearing a session"""
         response = client.delete("/session/test_session_to_clear")
-        # May return 404 if session doesn't exist
         assert response.status_code in [200, 404, 503]
 
 
@@ -106,11 +101,10 @@ class TestInputValidation:
                 "session_id": "test"
             }
         )
-        assert response.status_code == 422  # Validation error
-    
+        assert response.status_code == 422
     def test_long_message(self):
         """Test message length limit"""
-        long_message = "a" * 6000  # Exceeds 5000 char limit
+        long_message = "a" * 6000  
         response = client.post(
             "/chat",
             json={
@@ -126,8 +120,6 @@ class TestCrisisDetection:
     
     def test_crisis_keywords_detected(self):
         """Test that crisis indicators are detected"""
-        # Note: This is for testing purposes only
-        # In production, these messages would trigger crisis response
         crisis_messages = [
             "I want to end my life",
             "I've been thinking about suicide"

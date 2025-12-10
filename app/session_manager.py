@@ -65,7 +65,6 @@ class SessionManager:
         session['messages'].append(message)
         session['updated_at'] = datetime.utcnow()
         
-        # Trim if too many messages
         if len(session['messages']) > self.max_messages:
             session['messages'] = session['messages'][-self.max_messages:]
     

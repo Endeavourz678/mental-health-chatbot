@@ -43,7 +43,7 @@ mental-health-chatbot/
 
 ## 🚀 Quick Start
 
-### Option 1: Local Development
+### Local Development
 
 1. **Clone and setup**
    ```bash
@@ -69,22 +69,6 @@ mental-health-chatbot/
    - API: http://localhost:8000
    - Docs: http://localhost:8000/docs
    - Health: http://localhost:8000/health
-
-### Option 2: Docker
-
-1. **Build and run**
-   ```bash
-   # Set your API key
-   export OPENAI_API_KEY=sk-your-key-here
-   
-   # Run with docker-compose
-   docker-compose up -d
-   ```
-
-2. **Check logs**
-   ```bash
-   docker-compose logs -f chatbot
-   ```
 
 ## 📡 API Endpoints
 
@@ -232,21 +216,6 @@ pytest tests/ --cov=app --cov=models --cov=utils
 
 This chatbot is designed for **supportive purposes only** and does **NOT** replace professional mental health care. If you or someone you know is in crisis:
 
-- **National Suicide Prevention Lifeline**: 988 (US)
-- **Crisis Text Line**: Text HOME to 741741
-- **International**: https://www.iasp.info/resources/Crisis_Centres/
-
-## 📝 License
-
-MIT License - See LICENSE file for details.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
 
 ---
 

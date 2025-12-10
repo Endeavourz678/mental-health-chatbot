@@ -1,11 +1,9 @@
-/* ========== RESET ========== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* ========== BODY ========== */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
@@ -13,7 +11,6 @@ body {
     color: #333;
 }
 
-/* ========== NAVBAR ========== */
 .navbar {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -57,7 +54,6 @@ body {
     gap: 16px;
 }
 
-/* ========== STATUS BADGE (Real-time mental health status) ========== */
 .status-badge {
     display: flex;
     align-items: center;
@@ -76,7 +72,6 @@ body {
     font-size: 16px;
 }
 
-/* Status variations */
 .status-badge.listening {
     background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
     border-color: #a5d6a7;
@@ -131,7 +126,6 @@ body {
     color: #2e7d32;
 }
 
-/* ========== CONNECTION STATUS ========== */
 .connection-status {
     display: flex;
     align-items: center;
@@ -165,7 +159,6 @@ body {
     font-weight: 500;
 }
 
-/* ========== NEW CHAT BUTTON ========== */
 .new-chat-btn {
     display: flex;
     align-items: center;
@@ -186,7 +179,6 @@ body {
     transform: scale(1.02);
 }
 
-/* ========== MAIN CONTAINER ========== */
 .main-container {
     max-width: 900px;
     margin: 0 auto;
@@ -203,7 +195,6 @@ body {
     gap: 16px;
 }
 
-/* ========== CHAT CARD ========== */
 .chat-card {
     flex: 1;
     background: rgba(255, 255, 255, 0.98);
@@ -214,7 +205,6 @@ body {
     overflow: hidden;
 }
 
-/* ========== CHAT HEADER ========== */
 .chat-header {
     display: flex;
     align-items: center;
@@ -254,7 +244,6 @@ body {
     opacity: 0.9;
 }
 
-/* ========== CHAT MESSAGES ========== */
 .chat-messages {
     flex: 1;
     padding: 20px;
@@ -280,7 +269,6 @@ body {
     border-radius: 10px;
 }
 
-/* ========== WELCOME MESSAGE ========== */
 .welcome-message {
     text-align: center;
     padding: 40px 20px;
@@ -310,7 +298,6 @@ body {
     font-style: italic;
 }
 
-/* ========== MESSAGE ROW ========== */
 .message-row {
     display: flex;
     gap: 10px;
@@ -330,7 +317,6 @@ body {
     flex-direction: row;
 }
 
-/* ========== MESSAGE AVATAR ========== */
 .msg-avatar {
     width: 36px;
     height: 36px;
@@ -355,7 +341,6 @@ body {
     font-weight: 600;
 }
 
-/* ========== MESSAGE CONTENT ========== */
 .msg-content {
     max-width: 70%;
     display: flex;
@@ -367,7 +352,6 @@ body {
     align-items: flex-end;
 }
 
-/* ========== MESSAGE BUBBLE ========== */
 .msg-bubble {
     padding: 12px 16px;
     font-size: 14px;
@@ -388,7 +372,6 @@ body {
     border-radius: 18px 4px 18px 18px;
 }
 
-/* ========== STATUS LABEL (di bawah bubble) ========== */
 .msg-status-label {
     display: inline-flex;
     align-items: center;
@@ -406,7 +389,6 @@ body {
     font-size: 12px;
 }
 
-/* ========== TYPING INDICATOR ========== */
 .typing-indicator {
     display: flex;
     gap: 4px;
@@ -434,7 +416,6 @@ body {
     40% { transform: scale(1); opacity: 1; }
 }
 
-/* ========== CHAT INPUT ========== */
 .chat-input-container {
     display: flex;
     align-items: center;
@@ -487,7 +468,6 @@ body {
     transform: none;
 }
 
-/* ========== DISCLAIMER ========== */
 .disclaimer {
     text-align: center;
     font-size: 11px;
@@ -496,7 +476,6 @@ body {
     line-height: 1.5;
 }
 
-/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
     .navbar {
         padding: 10px 16px;

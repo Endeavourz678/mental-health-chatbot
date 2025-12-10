@@ -1,6 +1,3 @@
-"""
-Vector Store management using ChromaDB for Mental Health Chatbot
-"""
 import chromadb
 from chromadb.config import Settings as ChromaSettings
 from openai import OpenAI
@@ -16,8 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class VectorStore:
-    """Manages vector storage and retrieval using ChromaDB"""
-    
     def __init__(
         self,
         persist_directory: str,
@@ -29,8 +24,6 @@ class VectorStore:
         self.collection_name = collection_name
         self.embedding_model = embedding_model
         self.openai_client = OpenAI(api_key=openai_api_key)
-        
-        # Initialize ChromaDB
         self.persist_directory.mkdir(parents=True, exist_ok=True)
         
         self.chroma_client = chromadb.PersistentClient(
@@ -38,7 +31,6 @@ class VectorStore:
             settings=ChromaSettings(anonymized_telemetry=False)
         )
         
-        # Get or create collection
         self.collection = self.chroma_client.get_or_create_collection(
             name=collection_name,
             metadata={"hnsw:space": "cosine"}
@@ -57,7 +49,6 @@ class VectorStore:
             List of embedding vectors
         """
         try:
-            # OpenAI has a limit on batch size, process in chunks
             batch_size = 100
             all_embeddings = []
             
@@ -106,7 +97,6 @@ class VectorStore:
             metadatas = [doc.metadata for doc in batch]
             
             try:
-                # Check for existing documents
                 existing = self.collection.get(ids=ids)
                 new_indices = [
                     j for j, doc_id in enumerate(ids) 
@@ -116,15 +106,12 @@ class VectorStore:
                 if not new_indices:
                     continue
                 
-                # Filter to only new documents
                 new_contents = [contents[j] for j in new_indices]
                 new_ids = [ids[j] for j in new_indices]
                 new_metadatas = [metadatas[j] for j in new_indices]
                 
-                # Generate embeddings
                 embeddings = self._get_embeddings(new_contents)
                 
-                # Add to collection
                 self.collection.add(
                     documents=new_contents,
                     embeddings=embeddings,
@@ -162,24 +149,19 @@ class VectorStore:
             List of search results with content, metadata, and scores
         """
         try:
-            # Generate query embedding
             query_embedding = self._get_embeddings([query])[0]
             
-            # Search
             results = self.collection.query(
                 query_embeddings=[query_embedding],
                 n_results=top_k,
                 where=filter_metadata
             )
             
-            # Format results
             formatted_results = []
             
             if results['documents'] and results['documents'][0]:
                 for i, doc in enumerate(results['documents'][0]):
-                    # ChromaDB returns distances, convert to similarity
                     distance = results['distances'][0][i] if results['distances'] else 0
-                    # For cosine distance, similarity = 1 - distance
                     similarity = 1 - distance
                     
                     if similarity >= threshold:

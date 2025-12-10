@@ -1,14 +1,8 @@
-#!/usr/bin/env python3
-"""
-Run script for Mental Health Chatbot
-Usage: python run.py [--reload] [--port PORT]
-"""
 import os
 import sys
 import argparse
 from pathlib import Path
 
-# Add project root to path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
@@ -17,7 +11,6 @@ def check_environment():
     """Check if environment is properly configured"""
     from dotenv import load_dotenv
     
-    # Load .env file
     env_file = project_root / ".env"
     if env_file.exists():
         load_dotenv(env_file)
@@ -25,7 +18,6 @@ def check_environment():
     else:
         print("⚠ No .env file found. Using environment variables.")
     
-    # Check for API key
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         print("✗ OPENAI_API_KEY not set!")
@@ -48,17 +40,17 @@ def check_data():
     if qa_file.exists():
         import pandas as pd
         df = pd.read_csv(qa_file, header=None)
-        print(f"✓ Found QA dataset: {len(df)} entries")
+        print(f" Found QA dataset: {len(df)} entries")
     else:
-        print("⚠ QA dataset not found at data/dataset_qa.csv")
+        print(" QA dataset not found at data/dataset_qa.csv")
     
     stmt_file = data_dir / "dataset_statements.csv"
     if stmt_file.exists():
         import pandas as pd
         df = pd.read_csv(stmt_file)
-        print(f"✓ Found statements dataset: {len(df)} entries")
+        print(f" Found statements dataset: {len(df)} entries")
     else:
-        print("⚠ Statements dataset not found (optional)")
+        print(" Statements dataset not found (optional)")
     
     return True
 

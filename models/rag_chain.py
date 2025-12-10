@@ -36,9 +36,8 @@ class RAGResponse:
     message_count: int = 0
 
 
-# Threshold for showing label
-CONFIDENCE_THRESHOLD = 0.65
-MIN_MESSAGES_FOR_LABEL = 3  # Minimum 3 messages before showing label
+CONFIDENCE_THRESHOLD = 0.75
+MIN_MESSAGES_FOR_LABEL = 3  
 
 
 class MentalHealthRAGChain:
@@ -113,7 +112,6 @@ class MentalHealthRAGChain:
             
             conversation_text = "\n".join([f"- {msg}" for msg in all_user_msgs])
             
-            # Build prompt with dataset context
             prompt = f"""You are a mental health classifier. Analyze the user messages and determine their mental health state.
 
 === USER MESSAGES ===
@@ -190,7 +188,6 @@ CONFIDENCE: [0.0-1.0]"""
         """Generate natural, friendly chatbot response using knowledge base"""
         try:
             if is_crisis:
-                # Crisis mode - serious but supportive
                 system = """You are a caring friend. The user may be in crisis.
 
 YOUR PRIORITIES:
@@ -206,7 +203,6 @@ YOUR PRIORITIES:
 DO NOT lecture. DO NOT give generic advice. Just be present and caring."""
 
             else:
-                # Normal mode - supportive friend using knowledge base
                 system = """You are MindCare, a warm and supportive conversational companion.
 
 === HOW TO COMMUNICATE ===
@@ -234,7 +230,7 @@ DO NOT lecture. DO NOT give generic advice. Just be present and caring."""
 
 === GOOD RESPONSE EXAMPLES ===
 User: "I'm feeling really sad today"
-Response: "Hey, I'm here for you. Want to talk about what's making you feel this way? 💙"
+Response: "Hey, I'm here for you. Want to talk about what's making you feel this way?"
 
 User: "I can't sleep lately"
 Response: "Ugh, that's rough. Is there something on your mind keeping you up?"
@@ -249,7 +245,6 @@ Remember: You're a FRIEND, not a doctor. Focus on LISTENING and BEING PRESENT.""
 
             messages = [{"role": "system", "content": system}]
             
-            # Add knowledge base context if available
             if context:
                 knowledge_prompt = f"""
 === KNOWLEDGE BASE REFERENCE ===
@@ -262,11 +257,9 @@ Remember: Reference this knowledge naturally without mentioning "database" or "k
 """
                 messages.append({"role": "system", "content": knowledge_prompt})
             
-            # Add chat history (last 10 messages)
             for msg in chat_history[-10:]:
                 messages.append({"role": msg.role, "content": msg.content})
             
-            # Add current message
             messages.append({"role": "user", "content": user_message})
             
             response = self.openai_client.chat.completions.create(
@@ -297,40 +290,32 @@ Remember: Reference this knowledge naturally without mentioning "database" or "k
         
         user_msg_count = len([m for m in chat_history if m.role == "user"]) + 1
         
-        # Check for crisis keywords
         is_crisis = self._check_crisis(user_message)
         
-        # Retrieve relevant context from dataset (ChromaDB)
         retrieved = self._retrieve_context(user_message)
         context = self._format_context(retrieved)
         
-        # Log retrieved context for debugging
         logger.info(f"Retrieved {len(retrieved)} documents from knowledge base")
         if retrieved:
             logger.debug(f"Context preview: {context[:200]}...")
         
-        # Analyze mental state using context from dataset
         classification, confidence = self._analyze_mental_state(chat_history, user_message, context)
         
-        # Override if crisis detected
         if is_crisis:
             classification = "Suicidal"
             confidence = 1.0
         
-        # Determine if should show status label
         show_label = (
             user_msg_count >= MIN_MESSAGES_FOR_LABEL and 
             confidence >= CONFIDENCE_THRESHOLD and
             classification != "Normal"
         ) or is_crisis
         
-        # Create status label
         status_label = None
         if show_label:
             confidence_pct = int(confidence * 100)
             status_label = f"{classification} ({confidence_pct}%)"
         
-        # Generate natural response using knowledge base
         answer = self._generate_response(
             user_message=user_message,
             context=context,
@@ -353,7 +338,7 @@ Remember: Reference this knowledge naturally without mentioning "database" or "k
         """Get crisis resource response"""
         return """I'm really concerned about what you've shared. You matter, and help is available.
 
-🆘 Please reach out now:
+ Please reach out now:
 ...ceritanya no darurat...
 
 I'm here with you, but please also contact one of these resources. You don't have to go through this alone."""

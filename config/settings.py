@@ -10,37 +10,29 @@ from typing import Optional
 class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
     
-    # API Keys
     OPENAI_API_KEY: str = ""
     
-    # Model Configuration
     EMBEDDING_MODEL: str = "text-embedding-3-small"
     LLM_MODEL: str = "gpt-4o-mini"
     LLM_TEMPERATURE: float = 0.7
     LLM_MAX_TOKENS: int = 1024
-    
-    # Vector Store Configuration
+
     CHROMA_PERSIST_DIRECTORY: str = "./data/chroma_db"
     COLLECTION_NAME: str = "mental_health_knowledge"
     
-    # RAG Configuration
     RETRIEVAL_TOP_K: int = 5
     SIMILARITY_THRESHOLD: float = 0.7
     
-    # Chunk Configuration
     CHUNK_SIZE: int = 500
     CHUNK_OVERLAP: int = 50
     
-    # Paths
     BASE_DIR: Path = Path(__file__).parent.parent
     DATA_DIR: Path = BASE_DIR / "data"
     
-    # Server Configuration
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     DEBUG: bool = False
     
-    # Logging
     LOG_LEVEL: str = "INFO"
     
     class Config:
@@ -48,12 +40,8 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
         extra = "ignore"
 
-
-# Global settings instance
 settings = Settings()
 
-
-# Mental Health Categories
 MENTAL_HEALTH_LABELS = [
     "Anxiety",
     "Depression", 
@@ -64,7 +52,6 @@ MENTAL_HEALTH_LABELS = [
     "Suicidal"
 ]
 
-# System Prompts
 SYSTEM_PROMPT = """You are a compassionate and professional mental health support chatbot. 
 Your role is to:
 1. Listen empathetically to users' concerns

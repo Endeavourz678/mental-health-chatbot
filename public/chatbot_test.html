@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-left">
             <div class="logo-icon">
@@ -19,19 +18,14 @@
         </div>
 
         <div class="nav-right">
-            <!-- Status Badge - Muncul real-time saat ada klasifikasi -->
             <div class="status-badge" id="statusBadge">
                 <span class="badge-icon">🧠</span>
                 <span class="badge-text" id="statusLabelText">Mendengarkan...</span>
             </div>
-
-            <!-- Connection Status -->
             <div class="connection-status">
                 <span class="status-dot" id="statusDot"></span>
                 <span class="status-text" id="statusText">Connecting...</span>
             </div>
-
-            <!-- New Chat Button -->
             <button class="new-chat-btn" id="newChatBtn" title="Mulai Chat Baru">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 5v14M5 12h14"/>
@@ -40,25 +34,19 @@
             </button>
         </div>
     </nav>
-
-    <!-- Main Content -->
     <main class="main-container">
         <div class="chat-wrapper">
             <div class="chat-card">
-                <!-- Chat Header -->
                 <div class="chat-header">
-                    <div class="chat-avatar">
+                    <!-- <div class="chat-avatar">
                         <img src="friend.jpg" alt="MindCare">
-                    </div>
+                    </div> -->
                     <div class="chat-info">
                         <span class="chat-name">MindCare Assistant</span>
                         <span class="chat-desc">Ceritakan perasaanmu, aku di sini mendengarkan 💚</span>
                     </div>
                 </div>
-
-                <!-- Chat Messages Area -->
                 <div class="chat-messages" id="chatMessages">
-                    <!-- Welcome Message -->
                     <div class="welcome-message" id="welcomeMessage">
                         <div class="welcome-icon">👋</div>
                         <h2>Hai! Selamat datang di MindCare</h2>
@@ -66,8 +54,6 @@
                         <p class="welcome-hint">Percakapan ini bersifat privat dan aku tidak akan menghakimi apapun yang kamu ceritakan.</p>
                     </div>
                 </div>
-
-                <!-- Chat Input -->
                 <form class="chat-input-container" id="chatForm">
                     <input
                         type="text"
@@ -83,11 +69,9 @@
                     </button>
                 </form>
             </div>
-
-            <!-- Disclaimer -->
             <p class="disclaimer">
                 ⚠️ MindCare adalah teman bicara AI, bukan pengganti profesional kesehatan mental. 
-                Jika kamu dalam kondisi darurat, hubungi 119 ext 8 atau datang ke IGD terdekat.
+                Jika kamu dalam kondisi darurat, hubungi 112 atau datang ke IGD terdekat.
             </p>
         </div>
     </main>

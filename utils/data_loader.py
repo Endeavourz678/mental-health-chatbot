@@ -1,6 +1,3 @@
-"""
-Data loading and preprocessing utilities for Mental Health Chatbot
-"""
 import pandas as pd
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
@@ -46,11 +43,9 @@ class DataLoader:
             documents = []
             
             for idx, row in df.iterrows():
-                # Skip rows that are intent summaries
                 if str(row['question']).startswith('Intent '):
                     continue
                 
-                # Create document combining Q&A
                 content = f"Question: {row['question']}\nAnswer: {row['answer']}"
                 
                 doc = Document(
@@ -93,7 +88,6 @@ class DataLoader:
             df = pd.read_csv(filepath)
             documents = []
             
-            # Handle different column name formats
             statement_col = 'statement' if 'statement' in df.columns else df.columns[1]
             status_col = 'status' if 'status' in df.columns else df.columns[2]
             
@@ -123,11 +117,9 @@ class DataLoader:
         """Load all available datasets"""
         all_documents = []
         
-        # Load QA dataset
         qa_docs = self.load_qa_dataset()
         all_documents.extend(qa_docs)
         
-        # Load statements dataset if exists
         stmt_docs = self.load_statements_dataset()
         all_documents.extend(stmt_docs)
         
@@ -182,9 +174,7 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]
     while start < len(text):
         end = start + chunk_size
         
-        # Try to break at sentence boundary
         if end < len(text):
-            # Look for sentence endings
             for sep in ['. ', '! ', '? ', '\n']:
                 last_sep = text[start:end].rfind(sep)
                 if last_sep != -1:

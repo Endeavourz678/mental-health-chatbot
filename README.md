@@ -35,8 +35,6 @@ mental-health-chatbot/
 ├── tests/
 │   └── test_api.py          # API tests
 ├── .env.example
-├── docker-compose.yml
-├── Dockerfile
 ├── requirements.txt
 └── README.md
 ```

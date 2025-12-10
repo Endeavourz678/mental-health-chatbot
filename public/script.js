@@ -1,273 +1,376 @@
-// ============ KONFIGURASI ============
+// ============================================
+// MindCare Chatbot - Frontend Script
+// Chat mengalir TERUS tanpa ending
+// Status ditampilkan real-time
+// User SELALU bisa chat terus
+// ============================================
+
 const API_URL = 'http://127.0.0.1:8000';
-const MIN_MESSAGES_FOR_ANALYSIS = 5;
 
-// ============ STATE ============
-let sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-let messageCount = 0;
-let analysisComplete = false;
+// State
+let sessionId = generateSessionId();
+let isProcessing = false;  // Flag untuk prevent double submit
 
-// ============ ELEMEN DOM ============
-const chatForm = document.getElementById('chatForm');
-const chatInput = document.getElementById('chatInput');
-const chatMessages = document.getElementById('chatMessages');
-const chatPlaceholder = document.getElementById('chatPlaceholder');
-const statusDot = document.getElementById('statusDot');
-const statusText = document.getElementById('statusText');
-const progressFill = document.getElementById('progressFill');
-const progressText = document.getElementById('progressText');
-const newChatBtn = document.getElementById('newChatBtn');
+// DOM Elements
+let chatForm, chatInput, chatMessages, statusBadge, statusLabelText;
+let statusDot, statusText, sendBtn, newChatBtn;
 
-// ============ CEK KONEKSI SERVER ============
-async function checkServerConnection() {
+// ============================================
+// INITIALIZATION
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get DOM elements
+    chatForm = document.getElementById('chatForm');
+    chatInput = document.getElementById('chatInput');
+    chatMessages = document.getElementById('chatMessages');
+    statusBadge = document.getElementById('statusBadge');
+    statusLabelText = document.getElementById('statusLabelText');
+    statusDot = document.getElementById('statusDot');
+    statusText = document.getElementById('statusText');
+    sendBtn = document.getElementById('sendBtn');
+    newChatBtn = document.getElementById('newChatBtn');
+    
+    // Setup event listeners
+    setupEventListeners();
+    
+    // Check connection
+    checkConnection();
+    setInterval(checkConnection, 30000);
+    
+    // Focus input
+    if (chatInput) chatInput.focus();
+    
+    // Initial status
+    updateStatusBadge(null, 0, false);
+    
+    console.log('MindCare initialized!');
+});
+
+// ============================================
+// EVENT LISTENERS SETUP
+// ============================================
+
+function setupEventListeners() {
+    // Form submit
+    if (chatForm) {
+        chatForm.addEventListener('submit', handleSubmit);
+    }
+    
+    // New chat button
+    if (newChatBtn) {
+        newChatBtn.addEventListener('click', handleNewChat);
+    }
+    
+    // Enter key to send
+    if (chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+            }
+        });
+    }
+}
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+
+function generateSessionId() {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function scrollToBottom() {
+    if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+}
+
+function enableInput() {
+    if (chatInput) {
+        chatInput.disabled = false;
+        chatInput.focus();
+    }
+    if (sendBtn) {
+        sendBtn.disabled = false;
+    }
+    isProcessing = false;
+}
+
+function disableInput() {
+    if (chatInput) chatInput.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+    isProcessing = true;
+}
+
+// ============================================
+// SERVER CONNECTION
+// ============================================
+
+async function checkConnection() {
     try {
-        const response = await fetch(API_URL + '/health');
+        const response = await fetch(`${API_URL}/health`, { 
+            method: 'GET',
+            timeout: 5000 
+        });
         if (response.ok) {
             if (statusDot) statusDot.classList.remove('offline');
-            if (statusText) statusText.textContent = 'Terhubung';
+            if (statusText) statusText.textContent = 'Online';
             return true;
         }
-    } catch (error) {
-        console.error('Server tidak terhubung:', error);
+    } catch (e) {
+        console.log('Connection check failed:', e.message);
     }
     if (statusDot) statusDot.classList.add('offline');
-    if (statusText) statusText.textContent = 'Terputus';
+    if (statusText) statusText.textContent = 'Offline';
     return false;
 }
 
-// ============ UPDATE PROGRESS BAR ============
-function updateProgress() {
-    const percentage = Math.min((messageCount / MIN_MESSAGES_FOR_ANALYSIS) * 100, 100);
-    if (progressFill) progressFill.style.width = percentage + '%';
+// ============================================
+// STATUS BADGE UPDATE
+// ============================================
+
+function updateStatusBadge(classification, confidence, showLabel) {
+    if (!statusBadge || !statusLabelText) return;
     
-    if (progressText) {
-        if (analysisComplete) {
-            progressText.textContent = '✅ Analisis selesai!';
-            if (progressFill) progressFill.style.background = '#28a745';
-        } else if (messageCount >= MIN_MESSAGES_FOR_ANALYSIS) {
-            progressText.textContent = '🔍 Menganalisis percakapan...';
-        } else {
-            const remaining = MIN_MESSAGES_FOR_ANALYSIS - messageCount;
-            progressText.textContent = `${remaining} pesan lagi untuk analisis`;
-        }
-    }
-}
-
-// ============ BUAT BUBBLE PESAN ============
-function createMessageBubble(text, sender = 'user') {
-    const row = document.createElement('div');
-    row.classList.add('message-row', sender);
-
-    const bubble = document.createElement('div');
-    bubble.classList.add('message-bubble');
-    bubble.innerHTML = text.replace(/\n/g, '<br>');
-
-    if (sender === 'assistant') {
-        const avatar = document.createElement('div');
-        avatar.classList.add('message-avatar');
-        avatar.innerHTML = `<img src="friend.jpg" alt="Assistant">`;
-        row.appendChild(avatar);
-        row.appendChild(bubble);
+    // Reset all classes
+    statusBadge.className = 'status-badge';
+    
+    if (showLabel && classification && classification !== 'Normal') {
+        const confidencePct = Math.round(confidence * 100);
+        statusLabelText.textContent = `${classification} (${confidencePct}%)`;
+        
+        // Add class based on classification
+        const classMap = {
+            'Anxiety': 'anxiety',
+            'Depression': 'depression',
+            'Stress': 'stress',
+            'Bipolar': 'bipolar',
+            'Personality Disorder': 'personality-disorder',
+            'Suicidal': 'suicidal',
+            'Normal': 'normal'
+        };
+        
+        const badgeClass = classMap[classification] || 'listening';
+        statusBadge.classList.add(badgeClass);
     } else {
-        row.appendChild(bubble);
+        statusLabelText.textContent = 'Mendengarkan...';
+        statusBadge.classList.add('listening');
     }
-
-    return row;
 }
 
-// ============ BUAT CARD ANALISIS ============
-function createAnalysisCard(classification, confidence, text) {
+// ============================================
+// MESSAGE CREATION
+// ============================================
+
+function createMessageElement(text, sender, statusLabel) {
     const row = document.createElement('div');
-    row.classList.add('message-row', 'assistant');
-
-    const avatar = document.createElement('div');
-    avatar.classList.add('message-avatar');
-    avatar.innerHTML = `<img src="friend.jpg" alt="Assistant">`;
-
-    const card = document.createElement('div');
-    card.classList.add('analysis-card');
+    row.className = `message-row ${sender}`;
     
-    const confidencePercent = Math.round(confidence * 100);
-    const badgeClass = classification ? classification.toLowerCase().replace(' ', '-') : 'normal';
-
-    card.innerHTML = `
-        <div class="analysis-header">
-            <span class="analysis-title">📊 Hasil Analisis</span>
-            <span class="analysis-badge ${badgeClass}">${classification || 'Unknown'}</span>
-        </div>
-        <div class="analysis-confidence">
-            <span>Tingkat keyakinan: ${confidencePercent}%</span>
-            <div class="confidence-bar">
-                <div class="confidence-fill" style="width: ${confidencePercent}%"></div>
-            </div>
-        </div>
-        <div class="analysis-content">${text.replace(/\n/g, '<br>')}</div>
-    `;
-
-    row.appendChild(avatar);
-    row.appendChild(card);
-
-    return row;
-}
-
-// ============ TAMPILKAN TYPING INDICATOR ============
-function showTypingIndicator() {
-    const row = document.createElement('div');
-    row.classList.add('message-row', 'assistant');
-    row.id = 'typingIndicator';
-
+    // Avatar
     const avatar = document.createElement('div');
-    avatar.classList.add('message-avatar');
-    avatar.innerHTML = `<img src="friend.jpg" alt="Assistant">`;
-
+    avatar.className = 'msg-avatar';
+    
+    if (sender === 'assistant') {
+        avatar.innerHTML = '<img src="friend.jpg" alt="MindCare">';
+    } else {
+        avatar.className += ' user-avatar';
+        avatar.textContent = '👤';
+    }
+    
+    // Content container
+    const content = document.createElement('div');
+    content.className = 'msg-content';
+    
+    // Bubble
     const bubble = document.createElement('div');
-    bubble.classList.add('message-bubble', 'typing-bubble');
-    bubble.innerHTML = `
-        <div class="typing-dots">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-    `;
-
+    bubble.className = 'msg-bubble';
+    bubble.innerHTML = text.replace(/\n/g, '<br>');
+    content.appendChild(bubble);
+    
+    // Status label (hanya untuk assistant dan jika ada)
+    if (sender === 'assistant' && statusLabel) {
+        const label = document.createElement('div');
+        label.className = 'msg-status-label';
+        label.innerHTML = `<span class="label-icon">📊</span> Status saat ini: <strong>${statusLabel}</strong>`;
+        content.appendChild(label);
+    }
+    
+    // Assemble
     row.appendChild(avatar);
-    row.appendChild(bubble);
-    chatMessages.appendChild(row);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    row.appendChild(content);
+    
+    return row;
 }
 
-// ============ SEMBUNYIKAN TYPING INDICATOR ============
-function hideTypingIndicator() {
-    const typing = document.getElementById('typingIndicator');
-    if (typing) typing.remove();
+function createTypingIndicator() {
+    const row = document.createElement('div');
+    row.className = 'message-row assistant';
+    row.id = 'typingIndicator';
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.innerHTML = '<img src="friend.jpg" alt="MindCare">';
+    
+    const typing = document.createElement('div');
+    typing.className = 'typing-indicator';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    
+    row.appendChild(avatar);
+    row.appendChild(typing);
+    
+    return row;
 }
 
-// ============ KIRIM PESAN KE API ============
-async function sendMessage(text) {
-    try {
-        const response = await fetch(API_URL + '/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: text,
-                session_id: sessionId
-            })
-        });
+function removeTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) indicator.remove();
+}
 
-        if (response.ok) {
-            const data = await response.json();
-            console.log('Response dari server:', data);
-            return data;
-        } else {
-            const error = await response.json();
-            console.error('Error dari server:', error);
-            throw new Error(error.detail || 'Terjadi kesalahan');
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-        throw error;
+function removeWelcomeMessage() {
+    const welcome = document.getElementById('welcomeMessage');
+    if (welcome) welcome.remove();
+}
+
+// ============================================
+// SEND MESSAGE TO API
+// ============================================
+
+async function sendMessageToAPI(message) {
+    const response = await fetch(`${API_URL}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            message: message,
+            session_id: sessionId
+        })
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Server error');
     }
+    
+    return await response.json();
 }
 
-// ============ HANDLE SUBMIT FORM ============
-chatForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
+// ============================================
+// HANDLE FORM SUBMIT
+// ============================================
 
-    const text = chatInput.value.trim();
-    if (!text) return;
-
-    // Hapus placeholder jika ada
-    if (chatPlaceholder) {
-        chatPlaceholder.remove();
+async function handleSubmit(e) {
+    if (e) e.preventDefault();
+    
+    // Prevent double submit
+    if (isProcessing) {
+        console.log('Already processing, please wait...');
+        return;
     }
-
-    // Tambah pesan user
-    const userBubble = createMessageBubble(text, 'user');
-    chatMessages.appendChild(userBubble);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    // Reset input & disable
-    chatInput.value = '';
-    chatInput.disabled = true;
-
-    // Update counter
-    messageCount++;
-    updateProgress();
-
-    // Tampilkan typing indicator
-    showTypingIndicator();
-
+    
+    const message = chatInput ? chatInput.value.trim() : '';
+    if (!message) return;
+    
+    // Clear input and disable temporarily
+    if (chatInput) chatInput.value = '';
+    disableInput();
+    
+    // Remove welcome message if exists
+    removeWelcomeMessage();
+    
+    // Add user message to chat
+    const userMsg = createMessageElement(message, 'user', null);
+    if (chatMessages) {
+        chatMessages.appendChild(userMsg);
+        scrollToBottom();
+    }
+    
+    // Show typing indicator
+    const typing = createTypingIndicator();
+    if (chatMessages) {
+        chatMessages.appendChild(typing);
+        scrollToBottom();
+    }
+    
     try {
-        // Kirim ke API
-        const data = await sendMessage(text);
-
-        // Sembunyikan typing
-        hideTypingIndicator();
-
-        // Tampilkan response
-        if (data.is_final_analysis && data.classification) {
-            // Tampilkan card analisis
-            analysisComplete = true;
-            const analysisCard = createAnalysisCard(
-                data.classification,
-                data.confidence,
-                data.response
-            );
-            chatMessages.appendChild(analysisCard);
-        } else {
-            // Tampilkan pesan biasa
-            const assistantBubble = createMessageBubble(data.response, 'assistant');
-            chatMessages.appendChild(assistantBubble);
+        // Send to API
+        console.log('Sending message:', message);
+        const data = await sendMessageToAPI(message);
+        console.log('Received response:', data);
+        
+        // Remove typing indicator
+        removeTypingIndicator();
+        
+        // Update status badge in navbar
+        updateStatusBadge(data.classification, data.confidence, data.show_label);
+        
+        // Create status label text if should show
+        const statusLabel = data.show_label ? data.status_label : null;
+        
+        // Add assistant message
+        const assistantMsg = createMessageElement(data.response, 'assistant', statusLabel);
+        if (chatMessages) {
+            chatMessages.appendChild(assistantMsg);
+            scrollToBottom();
         }
-
-        updateProgress();
-
+        
     } catch (error) {
-        hideTypingIndicator();
-        const errorBubble = createMessageBubble(
-            'Maaf, terjadi kesalahan koneksi. Pastikan server berjalan.',
-            'assistant'
+        console.error('Error sending message:', error);
+        removeTypingIndicator();
+        
+        // Show error message
+        const errorMsg = createMessageElement(
+            '😔 Maaf, terjadi kesalahan koneksi. Pastikan server sedang berjalan. Kamu tetap bisa coba kirim pesan lagi.',
+            'assistant',
+            null
         );
-        chatMessages.appendChild(errorBubble);
+        if (chatMessages) {
+            chatMessages.appendChild(errorMsg);
+            scrollToBottom();
+        }
     }
-
-    // Enable input kembali
-    chatInput.disabled = false;
-    chatInput.focus();
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-});
-
-// ============ NEW CHAT ============
-function newChat() {
-    sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    messageCount = 0;
-    analysisComplete = false;
     
-    // Reset chat messages
-    chatMessages.innerHTML = `
-        <div class="chat-placeholder" id="chatPlaceholder">
-            Belum ada percakapan. Kamu bisa mulai dengan menceritakan perasaanmu di sini.
-        </div>
-    `;
-    
-    // Reset progress
-    if (progressFill) {
-        progressFill.style.width = '0%';
-        progressFill.style.background = 'linear-gradient(135deg, #c8ff00, #a8e000)';
-    }
-    updateProgress();
-    
-    chatInput.focus();
+    // ALWAYS re-enable input - this is critical!
+    enableInput();
 }
 
-// ============ EVENT LISTENER UNTUK NEW CHAT BUTTON ============
-if (newChatBtn) {
-    newChatBtn.addEventListener('click', newChat);
+// ============================================
+// HANDLE NEW CHAT
+// ============================================
+
+function handleNewChat() {
+    // Generate new session
+    sessionId = generateSessionId();
+    
+    // Clear messages and show welcome
+    if (chatMessages) {
+        chatMessages.innerHTML = `
+            <div class="welcome-message" id="welcomeMessage">
+                <div class="welcome-icon">👋</div>
+                <h2>Hai! Selamat datang di MindCare</h2>
+                <p>Aku di sini untuk mendengarkan ceritamu. Kamu bisa berbagi apa saja yang sedang kamu rasakan - senang, sedih, cemas, atau apapun itu.</p>
+                <p class="welcome-hint">Percakapan ini bersifat privat dan aku tidak akan menghakimi apapun yang kamu ceritakan.</p>
+            </div>
+        `;
+    }
+    
+    // Reset status badge
+    updateStatusBadge(null, 0, false);
+    
+    // Enable and focus input
+    enableInput();
+    
+    console.log('New chat started with session:', sessionId);
 }
 
-// ============ INISIALISASI ============
-checkServerConnection();
-setInterval(checkServerConnection, 30000); // Cek setiap 30 detik
-updateProgress();
+// ============================================
+// EXPOSE FUNCTIONS GLOBALLY (for debugging)
+// ============================================
+
+window.MindCare = {
+    sendMessage: handleSubmit,
+    newChat: handleNewChat,
+    checkConnection: checkConnection,
+    getSessionId: () => sessionId,
+    enableInput: enableInput
+};

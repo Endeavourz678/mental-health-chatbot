@@ -219,7 +219,7 @@ async def chat(
     sessions: SessionManager = Depends(get_session_manager)
 ):
     """
-    Main chat endpoint
+    Main chat endpoint - natural flowing conversation with real-time status labeling
     """
     try:
         session_id = request.session_id or str(uuid.uuid4())
@@ -244,16 +244,16 @@ async def chat(
         except:
             pass
         
-        # Return simple dict
+        # Return response with status label
         return {
             "message_id": f"msg_{uuid.uuid4().hex[:12]}",
             "response": response.answer,
             "classification": response.classification,
             "confidence": response.confidence,
             "is_crisis": response.is_crisis,
-            "is_final_analysis": response.is_final_analysis,
-            "message_count": response.message_count,
-            "messages_until_analysis": max(0, 5 - response.message_count)
+            "status_label": response.status_label,  # Label seperti "Depression (75% confidence)"
+            "show_label": response.show_label,       # Boolean apakah perlu tampilkan label
+            "message_count": response.message_count
         }
         
     except Exception as e:

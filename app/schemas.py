@@ -6,7 +6,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 
-# ============ Request Schemas ============
+# Request Schemas
 
 class ChatRequest(BaseModel):
     """Request schema for chat endpoint"""
@@ -37,7 +37,7 @@ class IndexDocumentsRequest(BaseModel):
     documents: List[Dict[str, Any]] = Field(..., description="List of documents to index")
     
 
-# ============ Response Schemas ============
+# Response Schemas
 
 class ContextItem(BaseModel):
     """Schema for retrieved context items"""
@@ -101,7 +101,7 @@ class ErrorResponse(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 
-# ============ Session Schemas ============
+# Session Schemas
 
 class Message(BaseModel):
     """Schema for a single message in conversation history"""

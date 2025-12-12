@@ -28,6 +28,10 @@ mental-health-chatbot/
 ├── models/
 │   ├── __init__.py
 │   └── rag_chain.py         # RAG implementation
+├──public/
+│   ├── index.html           # Run this for access our chatbot
+│   ├── script.js
+│   └── style.css
 ├── utils/
 │   ├── __init__.py
 │   ├── data_loader.py       # Data processing
@@ -43,30 +47,18 @@ mental-health-chatbot/
 
 ### Local Development
 
-1. **Clone and setup**
-   ```bash
-   cd mental-health-chatbot
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+# 1. Install dependencies
+pip install -r requirements.txt
 
-2. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your OpenAI API key
-   ```
+# 2. Setup API key
+cp .env.example .env
+# Edit .env → tambahkan OPENAI_API_KEY=sk-xxx
 
-3. **Run the server**
-   ```bash
-   cd mental-health-chatbot
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
+# 3. Run backend
+python run.py
 
-4. **Access the API**
-   - API: http://localhost:8000
-   - Docs: http://localhost:8000/docs
-   - Health: http://localhost:8000/health
+# 4. Open browser
+http://localhost:3000
 
 ## 📡 API Endpoints
 

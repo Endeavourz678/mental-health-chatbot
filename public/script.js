@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     
     checkConnection();
-    setInterval(checkConnection, 30000);
+    // setInterval(checkConnection, 30000);
     
     if (chatInput) chatInput.focus();
     
